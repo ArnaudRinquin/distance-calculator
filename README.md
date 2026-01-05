@@ -8,7 +8,7 @@ Calcule la distance à vol d'oiseau entre des villes françaises et Monts (Indre
 
 1. Import CSV (code postal + ville)
 2. Calcul instantané via base embarquée (~6300 codes postaux)
-3. Coefficients configurables par tranches de distance
+3. Coefficients configurables par tranches de distance + totaux (distances brutes et pondérées)
 4. Export CSV
 
 ## Développement
