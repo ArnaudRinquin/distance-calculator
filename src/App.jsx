@@ -725,6 +725,48 @@ export default function App() {
               />
             </div>
 
+            {/* Totals */}
+            {(() => {
+              const validData = processedData.filter(row => row[2] !== 'N/A');
+              const totalDistance = validData.reduce((sum, row) => sum + parseFloat(row[2]), 0);
+              const totalWeighted = validData.reduce((sum, row) => {
+                const ratio = getRatioForDistance(row[2]);
+                return sum + parseFloat(row[2]) * ratio;
+              }, 0);
+              return (
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr',
+                  gap: '16px',
+                  marginTop: '24px',
+                  marginBottom: '24px'
+                }}>
+                  <div style={{
+                    padding: '20px',
+                    background: 'rgba(16, 185, 129, 0.1)',
+                    borderRadius: '12px',
+                    border: '1px solid rgba(16, 185, 129, 0.2)'
+                  }}>
+                    <p style={{ fontSize: '13px', color: '#6ee7b7', margin: '0 0 4px 0', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total distances</p>
+                    <p style={{ fontSize: '28px', fontWeight: 700, color: '#10b981', margin: 0, fontFamily: "'JetBrains Mono', monospace" }}>
+                      {totalDistance.toLocaleString('fr-FR', { maximumFractionDigits: 0 })} km
+                    </p>
+                  </div>
+                  <div style={{
+                    padding: '20px',
+                    background: 'rgba(99, 102, 241, 0.1)',
+                    borderRadius: '12px',
+                    border: '1px solid rgba(99, 102, 241, 0.2)'
+                  }}>
+                    <p style={{ fontSize: '13px', color: '#a5b4fc', margin: '0 0 4px 0', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total pondéré</p>
+                    <p style={{ fontSize: '28px', fontWeight: 700, color: '#818cf8', margin: 0, fontFamily: "'JetBrains Mono', monospace" }}>
+                      {totalWeighted.toLocaleString('fr-FR', { maximumFractionDigits: 0 })} km
+                    </p>
+                  </div>
+                </div>
+              );
+            })()}
+
             {/* Visualization */}
             <div style={{ marginTop: '32px' }}>
               <p style={{ fontSize: '13px', color: '#64748b', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
