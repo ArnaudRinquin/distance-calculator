@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { getCoordinates, POSTAL_COORDS } from './postal_coords';
 
 // Coordonnées de Monts (37260) - ville de référence
@@ -109,6 +109,12 @@ const Icons = {
       <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
       <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
     </svg>
+  ),
+  Home: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+      <polyline points="9 22 9 12 15 12 15 22" />
+    </svg>
   )
 };
 
@@ -117,13 +123,27 @@ export default function App() {
   const [processedData, setProcessedData] = useState([]);
   const [stats, setStats] = useState({ total: 0, unique: 0, found: 0, notFound: 0 });
   const [errors, setErrors] = useState([]);
-  const [ratioRanges, setRatioRanges] = useState([
-    { min: 0, max: 100, ratio: 1 },
-    { min: 100, max: 200, ratio: 2 },
-    { min: 200, max: 500, ratio: 3 }
-  ]);
-  const [defaultRatio, setDefaultRatio] = useState(5);
+  const [ratioRanges, setRatioRanges] = useState(() => {
+    const saved = localStorage.getItem('ratioRanges');
+    return saved ? JSON.parse(saved) : [
+      { min: 0, max: 100, ratio: 1 },
+      { min: 100, max: 200, ratio: 2 },
+      { min: 200, max: 500, ratio: 3 }
+    ];
+  });
+  const [defaultRatio, setDefaultRatio] = useState(() => {
+    const saved = localStorage.getItem('defaultRatio');
+    return saved ? JSON.parse(saved) : 5;
+  });
   const [dragOver, setDragOver] = useState(false);
+
+  useEffect(() => {
+    localStorage.setItem('ratioRanges', JSON.stringify(ratioRanges));
+  }, [ratioRanges]);
+
+  useEffect(() => {
+    localStorage.setItem('defaultRatio', JSON.stringify(defaultRatio));
+  }, [defaultRatio]);
 
   const dbSize = Object.keys(POSTAL_COORDS).length;
 
@@ -326,7 +346,7 @@ export default function App() {
             Calculateur de Distance
           </h1>
           <p style={{ fontSize: '18px', color: '#94a3b8', margin: 0 }}>
-            Calculez les distances depuis les villes françaises vers Monts
+            Calculez les distances à vol d'oiseau depuis les villes françaises vers Monts
           </p>
           <div style={{
             display: 'inline-flex',
@@ -342,34 +362,56 @@ export default function App() {
         </div>
 
         {/* Steps indicator */}
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginBottom: '40px' }}>
-          {[1, 2, 3].map(s => (
-            <div key={s} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <div style={{
-                width: '36px',
-                height: '36px',
-                borderRadius: '50%',
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', marginBottom: '40px' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '8px' }}>
+            {[1, 2, 3].map(s => (
+              <div key={s} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div style={{
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontWeight: 600,
+                  fontSize: '14px',
+                  background: step >= s ? 'linear-gradient(135deg, #6366f1, #8b5cf6)' : 'rgba(255,255,255,0.1)',
+                  color: step >= s ? '#fff' : '#64748b',
+                  boxShadow: step >= s ? '0 4px 15px rgba(99, 102, 241, 0.4)' : 'none'
+                }}>
+                  {step > s ? <Icons.Check /> : s}
+                </div>
+                {s < 3 && (
+                  <div style={{
+                    width: '60px',
+                    height: '2px',
+                    background: step > s ? 'linear-gradient(90deg, #6366f1, #8b5cf6)' : 'rgba(255,255,255,0.1)',
+                    borderRadius: '1px'
+                  }} />
+                )}
+              </div>
+            ))}
+          </div>
+          {step > 1 && (
+            <button
+              onClick={() => { setStep(1); setProcessedData([]); setErrors([]); }}
+              style={{
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center',
-                fontWeight: 600,
-                fontSize: '14px',
-                background: step >= s ? 'linear-gradient(135deg, #6366f1, #8b5cf6)' : 'rgba(255,255,255,0.1)',
-                color: step >= s ? '#fff' : '#64748b',
-                boxShadow: step >= s ? '0 4px 15px rgba(99, 102, 241, 0.4)' : 'none'
-              }}>
-                {step > s ? <Icons.Check /> : s}
-              </div>
-              {s < 3 && (
-                <div style={{
-                  width: '60px',
-                  height: '2px',
-                  background: step > s ? 'linear-gradient(90deg, #6366f1, #8b5cf6)' : 'rgba(255,255,255,0.1)',
-                  borderRadius: '1px'
-                }} />
-              )}
-            </div>
-          ))}
+                gap: '6px',
+                padding: '6px 12px',
+                background: 'transparent',
+                border: '1px solid rgba(255,255,255,0.2)',
+                borderRadius: '6px',
+                color: '#94a3b8',
+                fontSize: '13px',
+                cursor: 'pointer'
+              }}
+            >
+              <Icons.Home />
+              Nouveau fichier
+            </button>
+          )}
         </div>
 
         {/* Step 1: Upload */}
